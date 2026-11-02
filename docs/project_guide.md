@@ -2,6 +2,10 @@
 
 A cloud-based food expiry tracker, built on AWS.
 
+This guide covers the design and the plan. Progress, AWS account facts and the resources that exist so far are in [status.md](status.md).
+
+**Status:** Phase 1 is done. Phase 2 is next. Region: `eu-west-1`. Email path: SES.
+
 **Contents:** [1 Overview](#1-overview) · [2 Big picture](#2-big-picture) · [3 Frontend](#3-frontend-layer) · [4 Backend](#4-backend-layer) · [5 Database](#5-database-layer) · [6 Alerts](#6-alert-layer) · [7 Storage](#7-storage-layer) · [8 Infrastructure](#8-infrastructure-layer) · [9 How it comes together](#9-how-it-all-comes-together) · [10 Decisions](#10-design-decisions) · [11 Phases](#11-implementation-phases) · [12 Cost](#12-cost-control) · [13 Limitations](#13-known-limitations) · [14 Troubleshooting](#14-troubleshooting) · [15 Future plans](#15-future-plans)
 
 ---
@@ -132,7 +136,7 @@ frontend/src/
 ├── api.js                fetch wrapper
 ├── auth/                 AuthProvider, ProtectedRoute
 ├── pages/                One file per page
-├── components/           ItemCard, ItemForm, PhotoField, NavBar
+├── components/           ItemCard, ItemForm, NavBar, and PhotoField in Phase 5
 └── utils/urgency.js      Days left and color
 ```
 
@@ -188,10 +192,10 @@ backend/
 │   ├── middleware/       auth, validate, errors
 │   ├── routes/           health, auth, items, photos, stats
 │   ├── schemas/          zod request schemas
-│   └── services/         s3.js, and sns.js on the SNS path
+│   └── services/         s3.js (Phase 5), and sns.js on the SNS path only
 ├── migrations/           node-pg-migrate files
 ├── scripts/              bootstrap-db.js
-└── deploy/               systemd service, RDS CA bundle
+└── deploy/               systemd service, RDS CA bundle (Phase 3)
 ```
 
 ### Request pipeline
@@ -384,7 +388,7 @@ ORDER BY u.id, i.expiry_date;
 
 The function has no internet route, so it reaches email through a VPC endpoint. The SES API needs an outbound internet connection, while [SMTP works through an endpoint](https://repost.aws/knowledge-center/ses-troubleshoot-email-ec2-lambda-vpc).
 
-| | SES path (preferred) | SNS path (fallback) |
+| | SES path (chosen) | SNS path (fallback, not needed) |
 | --- | --- | --- |
 | Use when | The account can use SES and create SMTP credentials | A restricted account blocks that |
 | Endpoint | `email-smtp`, port 587 | `sns`, port 443 |
@@ -485,7 +489,7 @@ flowchart LR
 ```bash
 #!/bin/bash
 set -euo pipefail   # no -x, so secrets stay out of the startup log
-export AWS_DEFAULT_REGION=<region>
+export AWS_DEFAULT_REGION=eu-west-1
 
 # Find the Node.js package name with: dnf list 'nodejs*'
 dnf install -y <node-package> unzip
@@ -529,7 +533,7 @@ The systemd service reads `/etc/cloudfridge.env`, restarts on failure and runs w
 | Scheduler role | Invoke the alert function |
 | SNS path only | Backend `sns:Subscribe`; Lambda `sns:Publish` |
 
-On a restricted student account that can't create roles, use its provided role and profile, such as `LabRole` and `LabInstanceProfile`.
+The account can create roles, so we create these ourselves. A restricted account would use its provided role and profile instead, such as `LabRole` and `LabInstanceProfile`.
 
 | Secret | Stored in | Read by |
 | --- | --- | --- |
@@ -683,22 +687,24 @@ Set the backend's minimum healthy to 50%, which replaces one server at a time wi
 | Parameter Store | Encrypted, with no monthly secret fee | Secrets Manager: rotation isn't needed |
 | Session Manager | No open port or shared keys | SSH: needs an open port and tracking of team IPs |
 | AWS console for infrastructure | Easy to learn and screenshot | Terraform: repeatable, but another tool |
-| Region `eu-central-1` | Close to Budapest | Use an allowed region if the account is restricted |
+| Region `eu-west-1` | The only region the account allows | `eu-central-1`, which is closer to Budapest but not allowed |
 
 ---
 
 ## 11. Implementation phases
 
-| Phase | Builds | Result |
-| --- | --- | --- |
-| 1. Application | Account check, frontend, backend, database schema | Full app works on a laptop |
-| 2. Foundation | Network, security groups, roles, RDS | AWS is ready for the app |
-| 3. Deployment and scaling | Load balancer, ASGs, releases | App runs on AWS and recovers by itself |
-| 4. Daily alerts | Lambda, schedule, email | Users get expiry emails |
-| 5. Optional photos | S3 photos, API and UI | Items can have photos |
-| 6. Testing and delivery | Tests, report, demo | Project is proven and submitted |
+| Phase | Builds | Result | Status |
+| --- | --- | --- | --- |
+| 1. Application | Account check, frontend, backend, database schema | Full app works on a laptop | **Done** |
+| 2. Foundation | Network, security groups, roles, RDS | AWS is ready for the app | Next |
+| 3. Deployment and scaling | Load balancer, ASGs, releases | App runs on AWS and recovers by itself | |
+| 4. Daily alerts | Lambda, schedule, email | Users get expiry emails | |
+| 5. Optional photos | S3 photos, API and UI | Items can have photos | |
+| 6. Testing and delivery | Tests, report, demo | Project is proven and submitted | |
 
-### Phase 1: Application
+Details of what each finished phase produced, and how it was verified, are in [status.md](status.md).
+
+### Phase 1: Application ✅ Done
 
 **Check the account first, because the answers affect later phases:**
 
@@ -708,7 +714,7 @@ Set the backend's minimum healthy to 50%, which replaces one server at a time wi
 4. Can you create VPC endpoints and use Session Manager?
 5. Set a billing alert if the account allows it.
 
-**answers are in aws-account-check.md**
+Answers: `eu-west-1` only, own IAM roles, SES works, endpoints allowed. The full table, and the billing alert still to set, are in [status.md](status.md#aws-account).
 
 **Build the app locally, using local PostgreSQL:**
 
@@ -720,7 +726,11 @@ Set the backend's minimum healthy to 50%, which replaces one server at a time wi
 
 **Done when:** a user can register, add an item, see the correct color, mark it used and see the statistics change. A second user can't see the first user's items.
 
+**Result:** all criteria met, with 19 API tests and 7 urgency tests passing. See [status.md](status.md#phase-1-verification).
+
 ### Phase 2: Foundation
+
+Before step 1, set an AWS budget alert, since nothing in AWS has been created yet.
 
 1. Create the VPC, four subnets, internet gateway and route tables from [section 8](#8-infrastructure-layer).
 2. Create all security groups.
@@ -836,6 +846,8 @@ Record a backup video in case the live demo fails.
 | RDS | Charged while running, with storage charged even when stopped | Stop between sessions. AWS restarts it after 7 days. |
 | Email VPC endpoint | Charged per hour, per AZ | Delete when not working on alerts |
 | S3, Lambda, Scheduler, SES, SNS | Very low at this usage | No action needed |
+
+The account runs on about $140 of credits, valid until around May 2027. Log each session's spending in [status.md](status.md#session-log).
 
 Check prices for your region with the AWS Pricing Calculator, and put your actual spending in the report. After grading, delete everything tagged `Project=cloudfridge`, starting with Lambda, because its network interfaces can take a while to clear and they block subnet deletion.
 

@@ -1,8 +1,13 @@
 # CloudFridge
 
-A cloud-based food expiry tracker, built on AWS. The full design and plan are in [docs/project_guide.md](docs/project_guide.md).
+A cloud-based food expiry tracker, built on AWS.
 
-**Status:** Phase 1 is complete, so the app runs locally. AWS deployment starts in Phase 2.
+| Document | Read it for |
+| --- | --- |
+| [docs/project_guide.md](docs/project_guide.md) | Design, architecture and the phase-by-phase plan |
+| [docs/status.md](docs/status.md) | Current progress, AWS account facts, resources created, open items |
+
+**Status:** Phase 1 is done, so the app runs locally. Phase 2 (AWS foundation in `eu-west-1`) is next.
 
 ## Run it locally
 
@@ -68,4 +73,4 @@ cd frontend && npm test    # Urgency rules
 | `infra/user-data/` | Server startup scripts (Phase 3) |
 | `scripts/` | Release packaging (Phase 3) |
 | `load-test/` | k6 scripts (Phase 6) |
-| `docs/` | Project guide and AWS account check |
+| `docs/` | Project guide and status |
