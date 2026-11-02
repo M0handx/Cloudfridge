@@ -4,10 +4,12 @@ A cloud-based food expiry tracker, built on AWS.
 
 | Document | Read it for |
 | --- | --- |
-| [docs/project_guide.md](docs/project_guide.md) | Design, architecture and the phase-by-phase plan |
-| [docs/status.md](docs/status.md) | Current progress, AWS account facts, resources created, open items |
+| [docs/project_guide.md](docs/project_guide.md) | Master design, architecture and requirements |
+| [docs/status.md](docs/status.md) | Live progress board, AWS account facts, resource inventory |
+| [docs/phase-1-application.md](docs/phase-1-application.md) | Phase 1 walkthrough: app, schema & test suite (**Done ✅**) |
+| [docs/phase-2-foundation.md](docs/phase-2-foundation.md) | Phase 2 walkthrough: AWS networking, RDS & IAM (**In Progress**) |
 
-**Status:** Phase 1 is done, so the app runs locally. Phase 2 (AWS foundation in `eu-west-1`) is next.
+**Status:** Phase 1 is done. Phase 2 (AWS foundation in `eu-west-1`) is in progress.
 
 ## Run it locally
 

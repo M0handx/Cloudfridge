@@ -6,16 +6,16 @@ Where the project stands right now. The design and plan live in [project_guide.m
 
 ## Current state
 
-| Phase | Status | Result |
+| Phase | Status | Result / Walkthrough |
 | --- | --- | --- |
-| 1. Application | **Done** (2 Nov 2026) | Full app runs locally, all tests pass |
-| 2. Foundation | Next | |
+| 1. Application | **Done** (2 Nov 2026) | Full app runs locally, all tests pass · [Phase 1 Walkthrough](phase-1-application.md) |
+| 2. Foundation | **In Progress** | AWS core infrastructure in `eu-west-1` · [Phase 2 Walkthrough](phase-2-foundation.md) |
 | 3. Deployment and scaling | Not started | |
 | 4. Daily alerts | Not started | |
 | 5. Optional photos | Not started | |
 | 6. Testing and delivery | Not started | |
 
-**Next step:** Phase 2, step 1: create the VPC in `eu-west-1`.
+**Next step:** Follow [Phase 2 Walkthrough](phase-2-foundation.md) to set budget alert and create the VPC in `eu-west-1`.
 
 ---
 
