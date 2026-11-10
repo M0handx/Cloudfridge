@@ -1,0 +1,18 @@
+[Unit]
+Description=CloudFridge API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Secrets and settings written by the startup script. systemd reads this file as root.
+EnvironmentFile=/etc/cloudfridge.env
+WorkingDirectory=/opt/cloudfridge
+ExecStart=/usr/bin/node src/server.js
+Restart=on-failure
+RestartSec=3
+# Runs as a temporary unprivileged user, not root.
+DynamicUser=yes
+
+[Install]
+WantedBy=multi-user.target
+

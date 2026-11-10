@@ -1,15 +1,17 @@
 # CloudFridge
 
-A cloud-based food expiry tracker, built on AWS.
+A cloud-based food expiry tracker, built on AWS. The graded deliverables are a report and a presentation, proven with screenshots of each phase.
 
 | Document | Read it for |
 | --- | --- |
-| [docs/project_guide.md](docs/project_guide.md) | Master design, architecture and requirements |
+| [docs/project_guide.md](docs/project_guide.md) | Design, architecture, deliverables and the roadmap of phases |
 | [docs/status.md](docs/status.md) | Live progress board, AWS account facts, resource inventory |
 | [docs/phase-1-application.md](docs/phase-1-application.md) | Phase 1 walkthrough: app, schema & test suite (**Done ✅**) |
-| [docs/phase-2-foundation.md](docs/phase-2-foundation.md) | Phase 2 walkthrough: AWS networking, RDS & IAM (**In Progress**) |
+| [docs/phase-2-foundation.md](docs/phase-2-foundation.md) | Phase 2 walkthrough: AWS networking, RDS & IAM (**Done ✅**) |
+| [docs/phase-3-deployment.md](docs/phase-3-deployment.md) | Phase 3 walkthrough: releases, load balancer, Auto Scaling (**Next**, not started) |
+| [docs/evidence/](docs/evidence/) | Screenshots for the report and presentation, named `p<phase>-<n>-<what>.png` |
 
-**Status:** Phase 1 is done. Phase 2 (AWS foundation in `eu-west-1`) is in progress.
+**Status:** Phases 1 and 2 are done. Phase 3 (deployment and scaling on AWS) is next and not started.
 
 ## Run it locally
 
@@ -75,4 +77,4 @@ cd frontend && npm test    # Urgency rules
 | `infra/user-data/` | Server startup scripts (Phase 3) |
 | `scripts/` | Release packaging (Phase 3) |
 | `load-test/` | k6 scripts (Phase 6) |
-| `docs/` | Project guide and status |
+| `docs/` | Project guide, status, phase walkthroughs and evidence |

@@ -2,9 +2,11 @@
 
 A cloud-based food expiry tracker, built on AWS.
 
-This guide covers the design and the plan. Progress, AWS account facts and the resources that exist so far are in [status.md](status.md).
+This guide covers the design and the plan. Progress, AWS account facts and the resources that exist so far are in [status.md](status.md). Each phase also has a click-by-click walkthrough, `phase-<n>-*.md`, written when the phase starts.
 
-**Status:** Phase 1 is done. Phase 2 is next. Region: `eu-west-1`. Email path: SES.
+**Goal:** the graded deliverables are a **report** and a **presentation** that show we designed and built a system using at least 5 cloud services. The app doesn't need to stay running: screenshots are accepted as proof. So every phase builds something, proves it works, captures screenshots, then shuts down whatever costs money. See [section 11](#11-implementation-phases) for the roadmap.
+
+**Status:** Phases 1 and 2 are done. Phase 3 is next and not started. Region: `eu-west-1`. Email path: SES.
 
 **Contents:** [1 Overview](#1-overview) · [2 Big picture](#2-big-picture) · [3 Frontend](#3-frontend-layer) · [4 Backend](#4-backend-layer) · [5 Database](#5-database-layer) · [6 Alerts](#6-alert-layer) · [7 Storage](#7-storage-layer) · [8 Infrastructure](#8-infrastructure-layer) · [9 How it comes together](#9-how-it-all-comes-together) · [10 Decisions](#10-design-decisions) · [11 Phases](#11-implementation-phases) · [12 Cost](#12-cost-control) · [13 Limitations](#13-known-limitations) · [14 Troubleshooting](#14-troubleshooting) · [15 Future plans](#15-future-plans)
 
@@ -341,7 +343,7 @@ CREATE INDEX items_pending_alert_idx ON items (expiry_date)
 
 ### Instance settings
 
-PostgreSQL 15 or later, `db.t3.micro`, 20 GB general-purpose storage, single-AZ, public access off, 1-day backups.
+PostgreSQL 17 (15 or later works), `db.t4g.micro`, 20 GB general-purpose storage, single-AZ, public access off, 1-day backups.
 
 ### End result
 
@@ -693,16 +695,62 @@ Set the backend's minimum healthy to 50%, which replaces one server at a time wi
 
 ## 11. Implementation phases
 
+### Deliverables
+
+| Deliverable | Contents | Built from |
+| --- | --- | --- |
+| Report, about 10 pages | Requirements, architecture, implementation, tests, cost, limitations | Sections 1 to 13 of this guide, plus screenshots |
+| Presentation, about 12 slides | The story of the project, one cloud service per slide, test results | Screenshots, and the diagrams in this guide |
+| Evidence | Screenshots and terminal output proving each step | `docs/evidence/`, captured during every phase |
+
+**Screenshot rules:** never show a password, secret value, SMTP credential or decrypted parameter. Crop or blur the account ID if you prefer. Keep the region (`eu-west-1`) and resource names visible, because they prove the screenshot is from this project.
+
+### Screenshot list
+
+These 14 screenshots are all the report and slides need. Each one proves something specific; everything else (IAM roles, Parameter Store, budget, listener rules) is described in the report's text instead of shown. Save them in `docs/evidence/` with these names. The walkthroughs mark the moment to take each one with 📸.
+
+| # | File | Phase | What it shows | Proves | Used in |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `p1-tests.png` | 1 | Terminal: 19 API tests and 7 urgency tests passing | The app was tested before deployment | Report: testing |
+| 2 | `p2-vpc-map.png` | 2 | VPC **Resource map**: 4 subnets in 2 Availability Zones, route tables, internet gateway | **VPC** | Slide 5 |
+| 3 | `p2-db-sg-rules.png` | 2 | `cloudfridge-db-sg` inbound rules: only the backend and Lambda groups | Layered network security | Slide 5 |
+| 4 | `p2-rds-private.png` | 2 | RDS **Connectivity & security**: private subnets, **Publicly accessible: No** | **RDS** | Slide 6 |
+| 5 | `p2-db-unreachable.png` | 2 | Terminal: endpoint resolves to `10.0.x.x`, connection from the laptop fails | The database is private | Slide 6 |
+| 6 | `p3-app.png` | 3 | Dashboard with colored items, load balancer address in the address bar | The app runs on AWS | Slide 2 |
+| 7 | `p3-ec2-instances.png` | 3 | Running instances: 1 frontend, 2 backend, in different Availability Zones | **EC2**, 2 services | Slide 7 |
+| 8 | `p3-target-groups.png` | 3 | Backend target group with 2 healthy targets | **Load balancer** | Slide 7 |
+| 9 | `p3-s3-releases.png` | 3 | Releases bucket with `frontend/` and `backend/` `current.zip` | **S3** | Slide 7 |
+| 10 | `p4-lambda.png` | 4 | Lambda overview with its EventBridge Scheduler trigger and VPC settings | **Lambda**, serverless | Slide 10 |
+| 11 | `p4-email.png` | 4 | The alert email in the inbox | Alerts work end to end | Slide 10 |
+| 12 | `p6-scaling.png` | 6 | CloudWatch: CPU rising under load and the instance count growing | **Auto Scaling** | Slide 8 |
+| 13 | `p6-asg-activity.png` | 6 | ASG activity history: scale-out, scale-in and the replacement of a terminated server | Scaling and self-healing | Slides 8, 9 |
+| 14 | `p6-cost.png` | 6 | Cost Explorer, cost by service for the project | Cost control | Slide 11 |
+
+Optional, only if done: `p5-photo.png` (an item with its photo). Terminal output for the other Phase 6 tests (user isolation, validation, direct server access) can go in the report as text, not images.
+
+### Roadmap
+
+Work in sessions. End each session in the cost state shown, and add a line to the [session log](status.md#session-log).
+
+| Order | Phase | Sessions | Main evidence | End the session with |
+| --- | --- | --- | --- | --- |
+| 1 | 1. Application | Done | Screenshot 1 (still to take) | Nothing running in AWS |
+| 2 | 2. Foundation ✅ | Done (10 Nov 2026) | Screenshots 2 to 5 (taken) | RDS stopped |
+| 3 | 3. Deployment and scaling | 2 | Screenshots 6 to 9 | ASGs at 0, RDS stopped. Delete the load balancer if the break is longer than a few days. |
+| 4 | 4. Daily alerts | 1 | Screenshots 10 and 11 | Email endpoint deleted, ASGs at 0, RDS stopped |
+| 5 | 5. Optional photos | Skip unless ahead of schedule | `p5-photo.png` | As phase 3 |
+| 6 | 6. Testing and delivery | 1 evidence session, then writing | Screenshots 12 to 14 | After grading: delete everything |
+
+**Don't delete the infrastructure before the report and slides are finished.** Stopping is cheap, and re-creating resources to retake a missed screenshot costs more.
+
 | Phase | Builds | Result | Status |
 | --- | --- | --- | --- |
 | 1. Application | Account check, frontend, backend, database schema | Full app works on a laptop | **Done** |
-| 2. Foundation | Network, security groups, roles, RDS | AWS is ready for the app | Next |
-| 3. Deployment and scaling | Load balancer, ASGs, releases | App runs on AWS and recovers by itself | |
+| 2. Foundation | Network, security groups, roles, RDS | AWS is ready for the app | **Done** |
+| 3. Deployment and scaling | Load balancer, ASGs, releases | App runs on AWS and recovers by itself | **Next**, not started |
 | 4. Daily alerts | Lambda, schedule, email | Users get expiry emails | |
-| 5. Optional photos | S3 photos, API and UI | Items can have photos | |
-| 6. Testing and delivery | Tests, report, demo | Project is proven and submitted | |
-
-Details of what each finished phase produced, and how it was verified, are in [status.md](status.md).
+| 5. Optional photos | S3 photos, API and UI | Items can have photos | Optional |
+| 6. Testing and delivery | Tests, evidence, report, presentation | Project is proven and submitted | |
 
 ### Phase 1: Application ✅ Done
 
@@ -726,11 +774,13 @@ Answers: `eu-west-1` only, own IAM roles, SES works, endpoints allowed. The full
 
 **Done when:** a user can register, add an item, see the correct color, mark it used and see the statistics change. A second user can't see the first user's items.
 
-**Result:** all criteria met, with 19 API tests and 7 urgency tests passing. See [status.md](status.md#phase-1-verification).
+**Result:** all criteria met, with 19 API tests and 7 urgency tests passing. See [phase-1-application.md](phase-1-application.md).
 
-### Phase 2: Foundation
+**Screenshot:** `p1-tests.png`. The app's own screenshot comes in Phase 3, from the deployed version.
 
-Before step 1, set an AWS budget alert, since nothing in AWS has been created yet.
+### Phase 2: Foundation ✅ Done
+
+**Walkthrough:** [phase-2-foundation.md](phase-2-foundation.md). Before step 1, set an AWS budget alert, since nothing in AWS has been created yet.
 
 1. Create the VPC, four subnets, internet gateway and route tables from [section 8](#8-infrastructure-layer).
 2. Create all security groups.
@@ -743,7 +793,13 @@ Name every resource with the prefix `cloudfridge-` and tag it `Project=cloudfrid
 
 **Done when:** the database is available with no public address, and connecting from a laptop fails.
 
+**Screenshots:** `p2-vpc-map`, `p2-db-sg-rules`, `p2-rds-private`, `p2-db-unreachable`.
+
+**Result:** all criteria met on 10 November 2026. The database resolves to `10.0.11.187` and port 5432 times out from a laptop. See [phase-2-foundation.md](phase-2-foundation.md) for the resource table. RDS is stopped.
+
 ### Phase 3: Deployment and scaling
+
+**Walkthrough:** [phase-3-deployment.md](phase-3-deployment.md). Two sessions: session A gets the app running through the load balancer, session B adds scaling and self-healing.
 
 1. Write scripts that build each service, zip it and upload it as `current.zip`.
 2. Write both startup scripts, and create the launch templates.
@@ -755,6 +811,8 @@ Name every resource with the prefix `cloudfridge-` and tag it `Project=cloudfrid
 8. Create the CloudWatch dashboard.
 
 **Done when:** the full app works through the load balancer with 2 healthy backend servers, direct connections to each server's IP fail, a server you terminate gets replaced, and a test instance refresh completes.
+
+**Screenshots:** `p3-app`, `p3-ec2-instances`, `p3-target-groups`, `p3-s3-releases`.
 
 ### Phase 4: Daily alerts
 
@@ -780,6 +838,8 @@ Name every resource with the prefix `cloudfridge-` and tag it `Project=cloudfrid
 
 **Done when:** an item expiring tomorrow produces exactly one email, a second run sends nothing, an item expiring in 5 days sends nothing, and changing an item's date makes it eligible again.
 
+**Screenshots:** `p4-lambda`, `p4-email`.
+
 ### Phase 5: Optional photos
 
 If time runs short, skip this phase. CloudFridge still meets the requirements, since S3 holds the release files.
@@ -793,23 +853,26 @@ If time runs short, skip this phase. CloudFridge still meets the requirements, s
 
 **Done when:** items save with and without a photo, a file over 5 MB is rejected, a photo displays in the app, and its direct S3 address returns an access error.
 
+**Screenshot:** `p5-photo` (an item card with its photo).
+
 ### Phase 6: Testing and delivery
 
-**Tests:**
+Run all the tests in one evidence session, with everything started. Plan for about 3 hours, because scale-in alone takes about 15 minutes.
 
-| Test | How | Expected result |
-| --- | --- | --- |
-| End to end | Use every feature in the deployed app | All features work |
-| User isolation | Request another user's item with your JWT | 404 |
-| Input validation | Send an empty name and an invalid date | 400 |
-| Database privacy | Connect to RDS from a laptop | Connection fails |
-| Server privacy | Call a server's public IP directly | Connection fails |
-| Scale out | Run k6 against `POST /api/auth/login`, ramping up to 30 users for 10 minutes | Servers increase within a few minutes |
-| Scale in | Stop the load test | Servers return to 2, which can take about 15 minutes |
-| Failure recovery | Terminate a backend server during light k6 traffic | Some requests may fail for up to 30 seconds, then all succeed, and a replacement starts |
-| Alerts | Add items that do and don't qualify, then run Lambda | Only qualifying items are sent, once |
+| Test | How | Expected result | Evidence |
+| --- | --- | --- | --- |
+| End to end | Use every feature in the deployed app | All features work | `p3-app` |
+| User isolation | Request another user's item with your JWT | 404 | Text in report |
+| Input validation | Send an empty name and an invalid date | 400 | Text in report |
+| Database privacy | Connect to RDS from a laptop | Connection fails | `p2-db-unreachable` |
+| Server privacy | Call a server's public IP directly | Connection fails | Text in report |
+| Scale out | Run k6 against `POST /api/auth/login`, ramping up to 30 users for 10 minutes | Servers increase within a few minutes | `p6-scaling`, `p6-asg-activity` |
+| Scale in | Stop the load test | Servers return to 2, which can take about 15 minutes | `p6-asg-activity` |
+| Failure recovery | Terminate a backend server during light k6 traffic | Some requests may fail for up to 30 seconds, then all succeed, and a replacement starts | `p6-asg-activity` |
+| Alerts | Add items that do and don't qualify, then run Lambda | Only qualifying items are sent, once | `p4-email` |
+| Cost | Open Billing, then Cost Explorer, filtered by the `Project` tag | Within the credits | `p6-cost` |
 
-Save the k6 results, CloudWatch graphs and ASG activity history for the report.
+The `Project` tag shows in Cost Explorer only after it's activated as a cost allocation tag in Billing. Activate it in Phase 2, because it takes up to a day to appear.
 
 **Report (10 pages):**
 
@@ -822,21 +885,32 @@ Save the k6 results, CloudWatch graphs and ASG activity history for the report.
 | Cost and limitations | 1 |
 | Conclusion and future plans | 0.5 |
 
-**Live demo:**
+**Presentation (about 12 slides):**
 
-1. Register, add an item with just a name and date, and show the dashboard colors.
-2. Attach a photo, and show that its direct S3 address is blocked.
-3. Start the load test early, then show the CPU graph and new servers.
-4. Terminate a backend server and show that the app recovers.
-5. Run Lambda by hand and show the email arriving.
+| Slide | Content | Evidence |
+| --- | --- | --- |
+| 1 | Problem and idea | — |
+| 2 | Features, and the app on the dashboard | `p3-app` |
+| 3 | Architecture | Big picture diagram from [section 2](#2-big-picture) |
+| 4 | Requirements: 7 services used, 5 needed | Table from [section 1](#requirements-coverage) |
+| 5 | VPC and security groups | `p2-vpc-map`, `p2-db-sg-rules` |
+| 6 | RDS, private and least-privilege | `p2-rds-private`, `p2-db-unreachable` |
+| 7 | EC2, load balancer and S3 | `p3-ec2-instances`, `p3-target-groups`, `p3-s3-releases` |
+| 8 | Auto Scaling under load | `p6-scaling`, `p6-asg-activity` |
+| 9 | Self-healing | `p6-asg-activity` |
+| 10 | Lambda daily alerts | `p4-lambda`, `p4-email` |
+| 11 | Cost and limitations | `p6-cost`, table from [section 13](#13-known-limitations) |
+| 12 | What we learned, and future plans | — |
 
-Record a backup video in case the live demo fails.
+A live demo is optional. If you do one, keep it to 2 minutes using the deployed app, and keep the screenshots as a fallback. A short screen recording of the app and of scaling under load is a good extra.
 
-**Done when:** all tests pass or have a documented explanation, the report is submitted, and the demo has been rehearsed end to end.
+**Done when:** all tests pass or have a documented explanation, the evidence is saved in `docs/evidence/`, and the report and presentation are submitted.
 
 ---
 
 ## 12. Cost control
+
+The rule: **build, prove, capture, stop.** Nothing needs to run between sessions.
 
 | Resource | Cost behavior | What to do |
 | --- | --- | --- |
@@ -849,7 +923,7 @@ Record a backup video in case the live demo fails.
 
 The account runs on about $140 of credits, valid until around May 2027. Log each session's spending in [status.md](status.md#session-log).
 
-Check prices for your region with the AWS Pricing Calculator, and put your actual spending in the report. After grading, delete everything tagged `Project=cloudfridge`, starting with Lambda, because its network interfaces can take a while to clear and they block subnet deletion.
+Check prices for your region with the AWS Pricing Calculator, and put your actual spending in the report. Only after grading, delete everything tagged `Project=cloudfridge`, starting with Lambda, because its network interfaces can take a while to clear and they block subnet deletion.
 
 ---
 

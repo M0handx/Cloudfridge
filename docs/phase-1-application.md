@@ -50,7 +50,7 @@ cloudfridge/
 - **Database Safety:** Uses connection pooling via `pg`. `bootstrap-db.js` prepares a dedicated application role `cloudfridge_app` restricted to row CRUD (schema altering revoked).
 
 ### Step 3: Frontend Single-Page App
-- **Stack:** React 19, Vite, React Router 7.
+- **Stack:** React 18, Vite 5, React Router 6.
 - **Design:** Clean, modern responsive interface with responsive cards and mobile-friendly layouts.
 - **Urgency Calculation:** Implemented in `frontend/src/utils/urgency.js` using local calendar boundaries (midnight-to-midnight) to avoid UTC offset and daylight saving shifts.
   - **Grey:** Expired (< 0 days left)
