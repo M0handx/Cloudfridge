@@ -6,7 +6,7 @@ This guide covers the design and the plan. Progress, AWS account facts and the r
 
 **Goal:** the graded deliverables are a **report** and a **presentation** that show we designed and built a system using at least 5 cloud services. The app doesn't need to stay running: screenshots are accepted as proof. So every phase builds something, proves it works, captures screenshots, then shuts down whatever costs money. See [section 11](#11-implementation-phases) for the roadmap.
 
-**Status:** Phases 1 to 4 are done (`cloudfridge-dashboard` deferred to Phase 6). Phase 5 (optional photos) or Phase 6 (testing and delivery) is next. Region: `eu-west-1`. Email path: SES.
+**Status:** All implementation and AWS testing are complete (Phases 1, 2, 3, 4, and 6 done). All 14 evidence screenshots are captured in `docs/evidence/`. Live cloud resources are decommissioned. Final deliverables are report and presentation slides. Region: `eu-west-1`. Email path: SES.
 
 **Contents:** [1 Overview](#1-overview) · [2 Big picture](#2-big-picture) · [3 Frontend](#3-frontend-layer) · [4 Backend](#4-backend-layer) · [5 Database](#5-database-layer) · [6 Alerts](#6-alert-layer) · [7 Storage](#7-storage-layer) · [8 Infrastructure](#8-infrastructure-layer) · [9 How it comes together](#9-how-it-all-comes-together) · [10 Decisions](#10-design-decisions) · [11 Phases](#11-implementation-phases) · [12 Cost](#12-cost-control) · [13 Limitations](#13-known-limitations) · [14 Troubleshooting](#14-troubleshooting) · [15 Future plans](#15-future-plans)
 
@@ -739,18 +739,18 @@ Work in sessions. End each session in the cost state shown, and add a line to th
 | 3 | 3. Deployment and scaling ✅ | Done (10 Nov 2026) | Screenshots 6 to 9 (taken) | ASGs at 0, RDS stopped, load balancer deleted |
 | 4 | 4. Daily alerts ✅ | Done (11 Nov 2026) | Screenshots 10 and 11 (taken) | Email endpoint deleted, ASGs at 0, RDS stopped |
 | 5 | 5. Optional photos | Skip unless ahead of schedule | `p5-photo.png` | As phase 3 |
-| 6 | 6. Testing and delivery | 1 evidence session, then writing | Screenshots 12 to 14 | After grading: delete everything |
+| 6 | 6. Testing and delivery ✅ | Done (12 Nov 2026) | Screenshots 12 to 14 (taken) | After grading: delete everything |
 
-**Don't delete the infrastructure before the report and slides are finished.** Stopping is cheap, and re-creating resources to retake a missed screenshot costs more.
+**All 14 project evidence screenshots are completed in `docs/evidence/`.**
 
 | Phase | Builds | Result | Status |
 | --- | --- | --- | --- |
 | 1. Application | Account check, frontend, backend, database schema | Full app works on a laptop | **Done** |
 | 2. Foundation | Network, security groups, roles, RDS | AWS is ready for the app | **Done** |
-| 3. Deployment and scaling | Load balancer, ASGs, releases | App runs on AWS and recovers by itself | **Done** (`cloudfridge-dashboard` in Phase 6) |
+| 3. Deployment and scaling | Load balancer, ASGs, releases | App runs on AWS and recovers by itself | **Done** |
 | 4. Daily alerts | Lambda, schedule, email | Users get expiry emails | **Done** |
-| 5. Optional photos | S3 photos, API and UI | Items can have photos | Optional |
-| 6. Testing and delivery | Tests, evidence, report, presentation | Project is proven and submitted | **Next**, not started |
+| 5. Optional photos | S3 photos, API and UI | Items can have photos | Skipped (not needed) |
+| 6. Testing and delivery | Tests, evidence, report, presentation | Project is proven and submitted | **Done** |
 
 ### Phase 1: Application ✅ Done
 

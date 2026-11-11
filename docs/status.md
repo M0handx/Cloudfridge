@@ -2,20 +2,20 @@
 
 Where the project stands right now. The design and plan live in [project_guide.md](project_guide.md); this file records what has actually been done, what exists in AWS, and what's still open. Update it at the end of every work session.
 
-**Last updated:** 11 November 2026
+**Last updated:** 12 November 2026
 
 ## Current state
 
 | Phase | Status | Result / Walkthrough |
 | --- | --- | --- |
-| 1. Application | **Done** (2 Nov 2026) | Full app runs locally, all tests pass · [Phase 1 Walkthrough](phase-1-application.md) |
+| 1. Application | **Done** (2 Nov 2026) | Full app runs locally, all tests pass (`p1-tests.png`) · [Phase 1 Walkthrough](phase-1-application.md) |
 | 2. Foundation | **Done** (10 Nov 2026) | VPC, security groups, roles, bucket, private RDS, secrets · [Phase 2 Walkthrough](phase-2-foundation.md) |
-| 3. Deployment and scaling | **Done** (10 Nov 2026) | App ran through the load balancer, 2 backend servers in 2 zones, self-healing and instance refresh tested (`cloudfridge-dashboard` deferred to Phase 6) · [Phase 3 Walkthrough](phase-3-deployment.md) |
-| 4. Daily alerts | **Done** (11 Nov 2026) | `cloudfridge-send-alerts` Lambda deployed in VPC, SES emails sent and deduplicated, EventBridge daily rule attached · [Phase 4 Walkthrough](phase-4-alerts.md) |
-| 5. Optional photos | Optional, not started | Skip unless ahead of schedule; otherwise S3 photos + upload UI |
-| 6. Testing and delivery | **Next**, not started | Load test (`k6`), CloudWatch dashboard, final evidence, report & slides |
+| 3. Deployment and scaling | **Done** (10 Nov 2026) | App ran through ALB, 2 backend servers in 2 AZs, self-healing tested · [Phase 3 Walkthrough](phase-3-deployment.md) |
+| 4. Daily alerts | **Done** (11 Nov 2026) | `cloudfridge-send-alerts` Lambda in VPC, SES alerts deduplicated, daily rule attached · [Phase 4 Walkthrough](phase-4-alerts.md) |
+| 5. Optional photos | Skipped | Not needed for core requirements · S3 storage already proven via releases |
+| 6. Testing and delivery | **Done** (12 Nov 2026) | CloudWatch dashboard created, load test run (CPU 99.89%), ASG scaled 2 → 4 instances, all 14 screenshots secured · [Phase 6 Walkthrough](phase-6-delivery.md) |
 
-**Next step:** Decide whether to skip **Phase 5 (Optional photos)** and start **Phase 6 (Testing and delivery)** (recreate `cloudfridge-alb`, create `cloudfridge-dashboard`, scale up EC2, run `k6` load test & failure recovery test, capture `p6-scaling.png`, `p6-asg-activity.png`, `p6-cost.png`, and `p1-tests.png`). Stop `cloudfridge-db` if stepping away between sessions.
+**Next step:** All implementation and AWS testing are complete. Write the final report (~10 pages) and presentation slides (~12 slides) using the 14 screenshots in [evidence/](evidence/). All paid AWS resources can remain terminated/deleted.
 
 **Deliverables:** a report and a presentation, proven with 14 screenshots in [evidence/](evidence/), listed in the [screenshot list](project_guide.md#screenshot-list). See the [roadmap](project_guide.md#roadmap).
 
@@ -114,6 +114,7 @@ Newest first. One line per session: what was done, and roughly what it cost.
 
 | Date | Work | AWS spend |
 | --- | --- | --- |
+| 12 Nov 2026 | **Phase 6 done.** Recreated `cloudfridge-alb` and scaled ASGs. Created CloudWatch dashboard `cloudfridge-dashboard` tracking CPU and healthy hosts. Wrote and executed `load-test/load.js` with concurrent bcrypt logins: CPU spiked to 99.89%, triggering target tracking policy `cloudfridge-backend-cpu50` and scaling backend ASG from 2 to 4 instances. Captured `p6-scaling.png`, `p6-asg-activity.png`, `p6-cost.png`, and `p1-tests.png`. All 14 project evidence screenshots completed. Shut down all live resources (ASGs to 0, ALB deleted, RDS stopped/deleted). | Check Billing (estimate: < $0.20 for load test and ALB run) |
 | 11 Nov 2026 | **Phase 4 done.** Wrote `lambda/send-alerts/` (`index.js`, `sendAlert.js`, `package.json`) and updated `scripts/package.sh`. Verified `mohandweb1@gmail.com` in SES (`eu-west-1`) and created IAM SMTP credentials. Created `cloudfridge-email-endpoint` (`vpce-0eaca2ea7795d0153`) with Private DNS, fixed `cloudfridge-email-endpoint-sg` port (`0` → `587`), deployed `cloudfridge-send-alerts` in VPC, verified alert email delivery, duplicate suppression, and date-update re-triggering, attached EventBridge rule `Cloudfridge-daily-alerts` (`cron(0 7 * * ? *)`), saved 4 screenshots (`p4-email-a.png`, `p4-email-b.png`, `p4-lambda.png`, `p4-lambda-triggers.png`), and deleted the VPC endpoint. | Check Billing (estimate: a few cents for ~1 hour of `cloudfridge-email-endpoint` and `cloudfridge-db`) |
 | 10 Nov 2026 | **Phase 3 done.** Built and uploaded both releases, 2 launch templates, 2 target groups, the load balancer and 2 ASGs. Fixed an endpoint typo in the Parameter Store URLs, created `cloudfridge_app` and ran the migration. App worked through the load balancer, direct server access timed out. Scaled the backend to 2 (zones a and b) with the 50% CPU policy, tested self-healing (replacement started in about 1 second) and instance refreshes on both groups. 4 screenshots plus 2 extras. Ended with ASGs at 0, RDS stopped, load balancer deleted and 2 stray Elastic IPs released. `cloudfridge-dashboard` deferred to Phase 6. | Check Billing (estimate: under \$1, about 1.5 hours of 2 to 3 servers, the load balancer and RDS) |
 | 10 Nov 2026 | **Phase 2 done.** Built the network, 6 security groups, 3 roles, releases bucket, private RDS and 3 parameters. Proved the database is private (resolves to `10.0.11.187`, port 5432 times out). 4 screenshots saved. RDS stopped. | Under \$1 (estimate: RDS ran for a few hours; check Billing) |
