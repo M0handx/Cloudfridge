@@ -6,7 +6,7 @@ This guide covers the design and the plan. Progress, AWS account facts and the r
 
 **Goal:** the graded deliverables are a **report** and a **presentation** that show we designed and built a system using at least 5 cloud services. The app doesn't need to stay running: screenshots are accepted as proof. So every phase builds something, proves it works, captures screenshots, then shuts down whatever costs money. See [section 11](#11-implementation-phases) for the roadmap.
 
-**Status:** Phases 1 and 2 are done. Phase 3 is next and not started. Region: `eu-west-1`. Email path: SES.
+**Status:** Phases 1, 2 and 3 are done (`cloudfridge-dashboard` deferred to Phase 6). Phase 4 is next. Region: `eu-west-1`. Email path: SES.
 
 **Contents:** [1 Overview](#1-overview) · [2 Big picture](#2-big-picture) · [3 Frontend](#3-frontend-layer) · [4 Backend](#4-backend-layer) · [5 Database](#5-database-layer) · [6 Alerts](#6-alert-layer) · [7 Storage](#7-storage-layer) · [8 Infrastructure](#8-infrastructure-layer) · [9 How it comes together](#9-how-it-all-comes-together) · [10 Decisions](#10-design-decisions) · [11 Phases](#11-implementation-phases) · [12 Cost](#12-cost-control) · [13 Limitations](#13-known-limitations) · [14 Troubleshooting](#14-troubleshooting) · [15 Future plans](#15-future-plans)
 
@@ -736,7 +736,7 @@ Work in sessions. End each session in the cost state shown, and add a line to th
 | --- | --- | --- | --- | --- |
 | 1 | 1. Application | Done | Screenshot 1 (still to take) | Nothing running in AWS |
 | 2 | 2. Foundation ✅ | Done (10 Nov 2026) | Screenshots 2 to 5 (taken) | RDS stopped |
-| 3 | 3. Deployment and scaling | 2 | Screenshots 6 to 9 | ASGs at 0, RDS stopped. Delete the load balancer if the break is longer than a few days. |
+| 3 | 3. Deployment and scaling ✅ | Done (10 Nov 2026) | Screenshots 6 to 9 (taken) | ASGs at 0, RDS stopped, load balancer deleted |
 | 4 | 4. Daily alerts | 1 | Screenshots 10 and 11 | Email endpoint deleted, ASGs at 0, RDS stopped |
 | 5 | 5. Optional photos | Skip unless ahead of schedule | `p5-photo.png` | As phase 3 |
 | 6 | 6. Testing and delivery | 1 evidence session, then writing | Screenshots 12 to 14 | After grading: delete everything |
@@ -747,8 +747,8 @@ Work in sessions. End each session in the cost state shown, and add a line to th
 | --- | --- | --- | --- |
 | 1. Application | Account check, frontend, backend, database schema | Full app works on a laptop | **Done** |
 | 2. Foundation | Network, security groups, roles, RDS | AWS is ready for the app | **Done** |
-| 3. Deployment and scaling | Load balancer, ASGs, releases | App runs on AWS and recovers by itself | **Next**, not started |
-| 4. Daily alerts | Lambda, schedule, email | Users get expiry emails | |
+| 3. Deployment and scaling | Load balancer, ASGs, releases | App runs on AWS and recovers by itself | **Done** (`cloudfridge-dashboard` in Phase 6) |
+| 4. Daily alerts | Lambda, schedule, email | Users get expiry emails | **Next**, not started |
 | 5. Optional photos | S3 photos, API and UI | Items can have photos | Optional |
 | 6. Testing and delivery | Tests, evidence, report, presentation | Project is proven and submitted | |
 
@@ -797,7 +797,7 @@ Name every resource with the prefix `cloudfridge-` and tag it `Project=cloudfrid
 
 **Result:** all criteria met on 10 November 2026. The database resolves to `10.0.11.187` and port 5432 times out from a laptop. See [phase-2-foundation.md](phase-2-foundation.md) for the resource table. RDS is stopped.
 
-### Phase 3: Deployment and scaling
+### Phase 3: Deployment and scaling ✅ Done
 
 **Walkthrough:** [phase-3-deployment.md](phase-3-deployment.md). Two sessions: session A gets the app running through the load balancer, session B adds scaling and self-healing.
 
@@ -814,7 +814,13 @@ Name every resource with the prefix `cloudfridge-` and tag it `Project=cloudfrid
 
 **Screenshots:** `p3-app`, `p3-ec2-instances`, `p3-target-groups`, `p3-s3-releases`.
 
+**Result (10 November 2026):** all Phase 3 criteria met. The app worked through the load balancer, 2 backend servers ran in `eu-west-1a` and `eu-west-1b`, direct calls to a server timed out, a terminated server was replaced within seconds, and instance refreshes completed on both groups. All 4 screenshots are taken. The load balancer was then deleted to save cost, and `cloudfridge-dashboard` is deferred to Phase 6 (created right after recreating the load balancer for `p6-scaling.png`). See [phase-3-deployment.md](phase-3-deployment.md#7-results).
+
 ### Phase 4: Daily alerts
+
+**Needs running:** only RDS (start it at the beginning of the session). No load balancer or EC2 servers. RDS restarts by itself around 17 November 2026 if still stopped, so start Phase 4 before then or stop it again.
+
+**Before you start:** the Lambda uses the `cloudfridge_app` URL, so copy it from `/cloudfridge/db/app-url` (already corrected to `was0jts`) into its encrypted environment variable. Reuse `backend/deploy/rds-ca-bundle.pem` as the Lambda's `rds-ca.pem`.
 
 **SES path:**
 

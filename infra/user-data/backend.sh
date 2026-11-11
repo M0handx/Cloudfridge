@@ -3,7 +3,7 @@
 # Before pasting, set RELEASES_BUCKET and check NODE_PACKAGE (see the Phase 3 walkthrough).
 set -euo pipefail   # no -x, so secrets stay out of the startup log
 
-RELEASES_BUCKET="cloudfridge-releases-CHANGE_ME"
+RELEASES_BUCKET="cloudfridge-releases-m1"
 NODE_PACKAGE="nodejs22"   # confirm with: dnf list 'nodejs*'
 
 export AWS_DEFAULT_REGION=eu-west-1

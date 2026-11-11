@@ -3,7 +3,7 @@
 # Before pasting, set RELEASES_BUCKET (see the Phase 3 walkthrough).
 set -euo pipefail
 
-RELEASES_BUCKET="cloudfridge-releases-CHANGE_ME"
+RELEASES_BUCKET="cloudfridge-releases-m1"
 
 export AWS_DEFAULT_REGION=eu-west-1
 

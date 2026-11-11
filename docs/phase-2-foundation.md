@@ -1,12 +1,12 @@
 # Phase 2: Foundation Walkthrough
 
-> **Status:** Done ✅ (10 November 2026). RDS is stopped. AWS restarts it automatically on 17 November 2026, so stop it again if Phase 3 hasn't started by then.
+> **Status:** Done ✅ (10 November 2026). RDS is stopped again after Phase 3's first session.
 > **Region:** `eu-west-1` (Ireland). Check the region selector at the top right of the console before every step.
 > **Names and tags:** prefix `cloudfridge-`, tag `Project=cloudfridge` on everything that accepts tags.
 > **Screenshots:** 4, marked 📸. Everything else is described in the report's text, so don't stop to capture it.
 > **Time:** about 2 hours. RDS takes about 10 minutes to create, so start it (step 5) and do step 6 preparation while it builds.
 
-All steps are done and the resource table is filled in. IDs marked `look up` weren't captured in a screenshot: copy them from the console before Phase 3 (**VPC** console → each resource list).
+All steps are done and the resource table is filled in. IDs still marked `look up` (route tables, frontend and email endpoint security groups) are only for reference: copy them from the console when convenient.
 
 ---
 
@@ -27,14 +27,14 @@ Inventory for Phase 3 and for cleanup.
 | Budget | AWS default `My Monthly Cost Budget` ($40). See the note below the table. | — |
 | VPC | `cloudfridge` (`10.0.0.0/16`) | `vpc-06619aaa1f0e99d36` |
 | Internet gateway | `cloudfridge-igw` | `igw-0562bad216687f574` |
-| Subnet | `cloudfridge-public-a` (`10.0.1.0/24`, `eu-west-1a`) | look up |
-| Subnet | `cloudfridge-public-b` (`10.0.2.0/24`, `eu-west-1b`) | look up |
+| Subnet | `cloudfridge-public-a` (`10.0.1.0/24`, `eu-west-1a`) | `subnet-06785a6f41c5424a3` |
+| Subnet | `cloudfridge-public-b` (`10.0.2.0/24`, `eu-west-1b`) | `subnet-0cad68eff1d72f199` |
 | Subnet | `cloudfridge-private-a` (`10.0.11.0/24`, `eu-west-1a`) | `subnet-0007863ece7ced3c4` |
 | Subnet | `cloudfridge-private-b` (`10.0.12.0/24`, `eu-west-1b`) | `subnet-0c50d44265cad5a04` |
 | Route table | `cloudfridge-public-rt` | look up |
 | Route table | `cloudfridge-private-rt` | look up |
 | Route table | Default main route table, unused | `rtb-0fdfab15ef0953251` |
-| Security group | `cloudfridge-alb-sg` | look up |
+| Security group | `cloudfridge-alb-sg` | `sg-00098aedd6bd2a6e1` |
 | Security group | `cloudfridge-frontend-sg` | look up |
 | Security group | `cloudfridge-backend-sg` | `sg-0c30c5d42d16708f0` |
 | Security group | `cloudfridge-lambda-sg` | `sg-0f811b646a2579f27` |
@@ -43,7 +43,7 @@ Inventory for Phase 3 and for cleanup.
 | IAM role | `cloudfridge-backend-role` | — |
 | IAM role | `cloudfridge-frontend-role` | — |
 | IAM role | `cloudfridge-lambda-role` | — |
-| S3 bucket | `cloudfridge-releases-<suffix>` | look up the suffix |
+| S3 bucket | `cloudfridge-releases-m1` | Suffix `m1` |
 | DB subnet group | `cloudfridge-db-subnet-group` | — |
 | RDS | `cloudfridge-db` (PostgreSQL 17.11, `db.t4g.micro`, 20 GiB, single-AZ, public access No) | `cloudfridge-db.cf686was0jts.eu-west-1.rds.amazonaws.com` (private IP `10.0.11.187`) |
 | Parameters | `/cloudfridge/db/admin-url`, `/cloudfridge/db/app-url`, `/cloudfridge/jwt-secret` | SecureString |
@@ -52,7 +52,7 @@ Inventory for Phase 3 and for cleanup.
 
 - The VPC's Name tag is `cloudfridge`, not `cloudfridge-vpc`. It works the same; in the console, pick it by its ID.
 - **Budget:** the account already had `My Monthly Cost Budget` ($40, healthy). Check its **Advanced options** once: **Credits** should be unticked, or the budget reads \$0 until the credits run out. A separate `cloudfridge-monthly-budget` of \$20 is optional.
-- **Endpoint spelling:** the hostname contains `was0jts`, not `wes0jts`. A one-letter typo gives `NXDOMAIN`, so always copy it with the copy icon.
+- **Endpoint spelling:** the hostname contains `was0jts`, not `wes0jts`. A one-letter typo gives `NXDOMAIN`, so always copy it with the copy icon. In Phase 3 the Parameter Store URLs turned out to contain the `wes0jts` typo, and were corrected on 10 November.
 - **Cost allocation tag:** `Project` wasn't listed yet on 10 November (AWS needs up to 24 hours). Activate it at the start of Phase 3 (**Billing** → **Cost allocation tags**).
 
 

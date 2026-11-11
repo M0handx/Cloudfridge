@@ -1,12 +1,10 @@
 # Phase 3: Deployment and Scaling Walkthrough
 
-> **Status:** Not started
+> **Status:** Done ✅ (10 November 2026). Both ASGs are at 0, RDS is stopped, the load balancer is deleted, and Elastic IPs are 0. `cloudfridge-dashboard` is deferred to Phase 6 (when the load balancer is recreated for load testing). See [Results](#7-results).
 > **Region:** `eu-west-1` (Ireland). Check the region selector before every step.
 > **Names and tags:** prefix `cloudfridge-`, tag `Project=cloudfridge` on everything that accepts tags.
 > **Screenshots:** 4, marked 📸. Everything else goes in the report's text.
 > **Time:** two sessions. **Session A** (steps 0 to 7, about 3 hours) gets the app running through the load balancer. **Session B** (steps 8 to 11, about 1.5 hours) adds scaling and self-healing.
-
-When every step is done, set the status to **Done ✅ (date)** and fill in the resource table.
 
 ---
 
@@ -24,17 +22,17 @@ Fill this in as you go.
 
 | Resource | Name | ID or address |
 | --- | --- | --- |
-| Backend release | `s3://cloudfridge-releases-<suffix>/backend/current.zip` | — |
-| Frontend release | `s3://cloudfridge-releases-<suffix>/frontend/current.zip` | — |
-| Launch template | `cloudfridge-backend-lt` | `lt-` |
-| Launch template | `cloudfridge-frontend-lt` | `lt-` |
-| Target group | `cloudfridge-frontend-tg` (port 80) | — |
-| Target group | `cloudfridge-backend-tg` (port 3000) | — |
-| Load balancer | `cloudfridge-alb` | `cloudfridge-alb-xxxx.eu-west-1.elb.amazonaws.com` |
-| Auto Scaling group | `cloudfridge-frontend-asg` | — |
-| Auto Scaling group | `cloudfridge-backend-asg` | — |
-| Scaling policy | `cloudfridge-backend-cpu50` | — |
-| Dashboard | `cloudfridge-dashboard` | — |
+| Backend release | `s3://cloudfridge-releases-m1/backend/current.zip` | Uploaded 10 Nov |
+| Frontend release | `s3://cloudfridge-releases-m1/frontend/current.zip` | 2 versions: original, and "CloudFridge V2" title (current) |
+| Launch template | `cloudfridge-backend-lt` | `lt-0b4f75be57ec468aa` |
+| Launch template | `cloudfridge-frontend-lt` | `lt-0eb6f06a13a510ef0` |
+| Target group | `cloudfridge-frontend-tg` (port 80) | Kept (free) |
+| Target group | `cloudfridge-backend-tg` (port 3000) | Kept (free) |
+| Load balancer | `cloudfridge-alb` | **Deleted** at the end of the session. Was `cloudfridge-alb-949062867.eu-west-1.elb.amazonaws.com`, used in `p3-app.png`. The address changes when it's recreated. |
+| Auto Scaling group | `cloudfridge-frontend-asg` | Kept, at 0 (normal size 1/1/1) |
+| Auto Scaling group | `cloudfridge-backend-asg` | Kept, at 0 (normal size min 2, desired 2, max 4) |
+| Scaling policy | `cloudfridge-backend-cpu50` | Target tracking, CPU 50%, warmup 120 s |
+| Dashboard | `cloudfridge-dashboard` | Deferred to Phase 6 (create right after recreating `cloudfridge-alb` for load testing) |
 
 ---
 
@@ -270,29 +268,30 @@ Write down the times for the report. This activity history is also the evidence 
 4. Fill in the resource table above, and update [status.md](status.md): current state, AWS resources and session log (with the spend from **Billing**).
 5. Save the screenshots in `docs/evidence/`.
 
-**Next session:** set both ASGs back to their sizes (frontend 1/1/1, backend min 2, desired 2, max 4) and start RDS. Everything else is still there.
+**Next session (Phase 4 or Phase 6):** Phase 4 (Daily alerts) does not need the load balancer or EC2 servers — only RDS needs to be started when testing the Lambda. When you later recreate `cloudfridge-alb` (for Phase 6 load testing), create `cloudfridge-dashboard` from [step 11](#step-11-test-a-release-with-an-instance-refresh) then so its widgets point to the active ALB.
 
 ---
 
 ## 5. Done when
 
-- [ ] Both `current.zip` files are in the releases bucket.
-- [ ] Both launch templates, both target groups and the load balancer exist.
-- [ ] The full app works through the load balancer address.
-- [ ] The backend has 2 healthy servers in different Availability Zones.
-- [ ] Calling a server's public IP directly fails.
-- [ ] A terminated backend server is replaced, and the app keeps working.
-- [ ] An instance refresh completes, and rollback through S3 versioning is understood.
-- [ ] The CPU target tracking policy exists at 50%.
-- [ ] The `cloudfridge-dashboard` dashboard exists.
-- [ ] Both ASGs are at 0, and RDS is stopped.
+- [x] Both `current.zip` files are in the releases bucket.
+- [x] Both launch templates, both target groups and the load balancer exist. (The load balancer was deleted afterwards to save cost.)
+- [x] The full app works through the load balancer address.
+- [x] The backend has 2 healthy servers in different Availability Zones.
+- [x] Calling a server's public IP directly fails.
+- [x] A terminated backend server is replaced, and the app keeps working.
+- [x] An instance refresh completes, and rollback through S3 versioning is understood.
+- [x] The CPU target tracking policy exists at 50%.
+- [ ] The `cloudfridge-dashboard` dashboard exists. *(Deferred to Phase 6, once `cloudfridge-alb` is recreated for load testing.)*
+- [x] Both ASGs are at 0, and RDS is stopped.
 
 ## Screenshot checklist
 
-- [ ] `p3-s3-releases.png`
-- [ ] `p3-app.png`
-- [ ] `p3-ec2-instances.png`
-- [ ] `p3-target-groups.png`
+- [x] `p3-s3-releases.png`
+- [x] `p3-app.png` (plus an extra, `p3-app2.png`)
+- [x] `p3-ec2-instances.png`
+- [x] `p3-target-groups.png`
+- [x] Extra: `p3-self-healing.png`, the backend ASG activity after the terminate test. The final `p6-asg-activity.png` is taken in Phase 6, once scale-out and scale-in are in the history too.
 
 Write down for the report, without screenshots: the launch template settings, the listener rule, the health check and timing settings, the scaling policy, and the self-healing and refresh results.
 
@@ -314,3 +313,29 @@ Write down for the report, without screenshots: the launch template settings, th
 | Page reload gives 404 | The `try_files` rule is missing | Check `/etc/nginx/default.d/spa.conf` exists, and `sudo systemctl restart nginx`. |
 | `node-pg-migrate` fails with a TLS or `self-signed` error | The CA isn't trusted by Node | Check `NODE_EXTRA_CA_CERTS` is exported and points to the bundle. As a last resort, connect with `?sslmode=no-verify` for this one-off admin command only, and write it down in the report. |
 | Registering returns 500 | `cloudfridge_app` or the tables don't exist yet | Repeat step 7 and check the backend log. |
+| `bootstrap-db.js` fails with `getaddrinfo ENOTFOUND` | Typo in the RDS endpoint inside a Parameter Store URL | Happened on 10 Nov: the parameters had `wes0jts` instead of `was0jts`. Fix both `/cloudfridge/db/*` parameters, then on a running server run `sed -i 's/<wrong>/<right>/' /etc/cloudfridge.env` and restart the API (new servers read the fixed value at boot). |
+| Pasting a block that starts with `sudo -i` does nothing after the first line | `sudo -i` opens a new shell, which drops the rest of the paste | Run `sudo -i` alone, then paste the rest. Run the `read` line for the password on its own too. |
+| Instance refresh finishes without replacing anything | **Enable skip matching** was ticked, and only the S3 zip changed, not the launch template | Start it again with **skip matching unticked**. |
+| `node-pg-migrate` prints `SECURITY WARNING: The SSL modes 'prefer', 'require' ...` | `pg` treats `sslmode=require` as `verify-full` for now | Harmless: the certificate is still verified. Could use `sslmode=verify-full` to silence it. |
+
+---
+
+## 7. Results
+
+Recorded on 10 November 2026, for the report.
+
+| Check | Result |
+| --- | --- |
+| Releases | Both zips built with `scripts/package.sh` and uploaded to `cloudfridge-releases-m1` (`p3-s3-releases.png`). The local `EBADENGINE` warning (Node 20 locally, project needs 22) is harmless: the servers run Node 22.23.4. |
+| Node.js on the servers | `nodejs22` installed by the startup script with no change needed. |
+| Session Manager | Connects to the backend with no SSH rule and no key pair. |
+| Database setup | `Created cloudfridge_app`, and migration `1730000000000_init` ran. Needed a Parameter Store endpoint fix first (see troubleshooting). |
+| App through the load balancer | Register, 4 urgency colors, mark used, statistics, and reloading `/stats` all work (`p3-app.png`). |
+| Direct access to a backend server | `curl -m 5 http://<backend public IP>:3000/api/health` times out. Only the load balancer can reach port 3000. |
+| First frontend server | The very first frontend instance was replaced once by the ASG shortly after creation, then the replacement became healthy. No change was needed. |
+| Scaling | Backend at min 2, desired 2, max 4, one server in `eu-west-1a` and one in `eu-west-1b` (`p3-ec2-instances.png`, `p3-target-groups.png`). Policy `cloudfridge-backend-cpu50`. |
+| Self-healing | Terminated `i-090999ab4956b2441` at 15:54:59 (CET). The ASG started replacement `i-05043af59dee7e79b` at 15:55:00, launched by 15:55:10, and the app stayed up on the other server throughout. Evidence: `p3-self-healing.png` and the ASG **Activity** tab. |
+| Frontend instance refresh | Title changed to "CloudFridge V2", new zip uploaded, refresh with minimum healthy 0% (skip matching off). The new title appeared after the refresh. |
+| Backend instance refresh | Minimum healthy 50%, one server at a time, completed. |
+| Rollback | Both versions of `frontend/current.zip` are listed under **Versions**. The site was left on V2. |
+| Dashboard | Deferred to Phase 6 (create after recreating `cloudfridge-alb`, so widgets use the active ALB ID for `p6-scaling.png`). |
