@@ -39,7 +39,7 @@ Inventory for Phase 3 and for cleanup.
 | Security group | `cloudfridge-backend-sg` | `sg-0c30c5d42d16708f0` |
 | Security group | `cloudfridge-lambda-sg` | `sg-0f811b646a2579f27` |
 | Security group | `cloudfridge-db-sg` | `sg-01e105d0b6f2ba8cd` |
-| Security group | `cloudfridge-email-endpoint-sg` | look up |
+| Security group | `cloudfridge-email-endpoint-sg` | `sg-0012e4986e31ce2a1` |
 | IAM role | `cloudfridge-backend-role` | — |
 | IAM role | `cloudfridge-frontend-role` | — |
 | IAM role | `cloudfridge-lambda-role` | — |

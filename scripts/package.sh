@@ -1,12 +1,12 @@
 #!/bin/bash
-# Builds the release zips for Phase 3.
+# Builds the release zips for Phases 3 and 4.
 #
-#   scripts/package.sh            builds both
+#   scripts/package.sh            builds backend + frontend
 #   scripts/package.sh backend    backend only
 #   scripts/package.sh frontend   frontend only
+#   scripts/package.sh lambda     alert Lambda only
 #
-# Output: release/backend/current.zip and release/frontend/current.zip.
-# Upload each one to the releases bucket with the same path (see the Phase 3 walkthrough).
+# Output: release/backend/current.zip, release/frontend/current.zip, release/lambda/send-alerts.zip.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -43,10 +43,36 @@ package_frontend() {
   echo "Built $OUT/frontend/current.zip"
 }
 
+package_lambda() {
+  local stage
+  stage="$(mktemp -d)"
+  cp "$ROOT/lambda/send-alerts/index.js" "$ROOT/lambda/send-alerts/sendAlert.js" "$ROOT/lambda/send-alerts/package.json" "$stage/"
+  if [ -f "$ROOT/lambda/send-alerts/package-lock.json" ]; then
+    cp "$ROOT/lambda/send-alerts/package-lock.json" "$stage/"
+  fi
+  if [ -f "$ROOT/lambda/send-alerts/rds-ca.pem" ]; then
+    cp "$ROOT/lambda/send-alerts/rds-ca.pem" "$stage/rds-ca.pem"
+  elif [ -f "$ROOT/backend/deploy/rds-ca-bundle.pem" ]; then
+    cp "$ROOT/backend/deploy/rds-ca-bundle.pem" "$stage/rds-ca.pem"
+  else
+    echo "Missing rds-ca.pem." >&2
+    rm -rf "$stage"
+    exit 1
+  fi
+  (cd "$stage" && npm install --omit=dev --no-audit --no-fund)
+
+  mkdir -p "$OUT/lambda"
+  rm -f "$OUT/lambda/send-alerts.zip"
+  (cd "$stage" && zip -qr "$OUT/lambda/send-alerts.zip" .)
+  rm -rf "$stage"
+  echo "Built $OUT/lambda/send-alerts.zip"
+}
+
 case "$TARGET" in
   backend) package_backend ;;
   frontend) package_frontend ;;
+  lambda) package_lambda ;;
   all) package_backend; package_frontend ;;
-  *) echo "Usage: $0 [backend|frontend|all]" >&2; exit 1 ;;
+  *) echo "Usage: $0 [backend|frontend|lambda|all]" >&2; exit 1 ;;
 esac
 
