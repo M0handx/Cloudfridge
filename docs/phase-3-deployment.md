@@ -1,6 +1,6 @@
 # Phase 3: Deployment and Scaling Walkthrough
 
-> **Status:** Done ✅ (10 November 2026). Both ASGs are at 0, RDS is stopped, the load balancer is deleted, and Elastic IPs are 0. `cloudfridge-dashboard` is deferred to Phase 6 (when the load balancer is recreated for load testing). See [Results](#7-results).
+> **Status:** Done ✅ (10 November 2026). Both ASGs are at 0, the load balancer and RDS are deleted, and `cloudfridge-dashboard` was created in Phase 6 (`p6-scaling.png`). See [Results](#7-results).
 > **Region:** `eu-west-1` (Ireland). Check the region selector before every step.
 > **Names and tags:** prefix `cloudfridge-`, tag `Project=cloudfridge` on everything that accepts tags.
 > **Screenshots:** 4, marked 📸. Everything else goes in the report's text.
@@ -32,7 +32,7 @@ Fill this in as you go.
 | Auto Scaling group | `cloudfridge-frontend-asg` | Kept, at 0 (normal size 1/1/1) |
 | Auto Scaling group | `cloudfridge-backend-asg` | Kept, at 0 (normal size min 2, desired 2, max 4) |
 | Scaling policy | `cloudfridge-backend-cpu50` | Target tracking, CPU 50%, warmup 120 s |
-| Dashboard | `cloudfridge-dashboard` | Deferred to Phase 6 (create right after recreating `cloudfridge-alb` for load testing) |
+| Dashboard | `cloudfridge-dashboard` | Created in Phase 6 (`p6-scaling.png`) |
 
 ---
 
@@ -282,7 +282,7 @@ Write down the times for the report. This activity history is also the evidence 
 - [x] A terminated backend server is replaced, and the app keeps working.
 - [x] An instance refresh completes, and rollback through S3 versioning is understood.
 - [x] The CPU target tracking policy exists at 50%.
-- [ ] The `cloudfridge-dashboard` dashboard exists. *(Deferred to Phase 6, once `cloudfridge-alb` is recreated for load testing.)*
+- [x] The `cloudfridge-dashboard` dashboard exists *(created in Phase 6, `p6-scaling.png`)*.
 - [x] Both ASGs are at 0, and RDS is stopped.
 
 ## Screenshot checklist
@@ -338,4 +338,4 @@ Recorded on 10 November 2026, for the report.
 | Frontend instance refresh | Title changed to "CloudFridge V2", new zip uploaded, refresh with minimum healthy 0% (skip matching off). The new title appeared after the refresh. |
 | Backend instance refresh | Minimum healthy 50%, one server at a time, completed. |
 | Rollback | Both versions of `frontend/current.zip` are listed under **Versions**. The site was left on V2. |
-| Dashboard | Deferred to Phase 6 (create after recreating `cloudfridge-alb`, so widgets use the active ALB ID for `p6-scaling.png`). |
+| Dashboard | Created in Phase 6 (`cloudfridge-dashboard` with `CPUUtilization` and `HealthyHostCount`, shown in `p6-scaling.png`). |

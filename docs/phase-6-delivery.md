@@ -154,3 +154,21 @@ Now that all 14 screenshots are secured, stop all paid resources:
 
 *(Note: Keep your S3 releases bucket, launch templates, security groups, and Lambda function intact until your report and slides are graded!)*
 
+
+---
+
+## 4. Results
+
+Recorded on 12 November 2026, for the report.
+
+| Check | Result |
+| --- | --- |
+| Load balancer | `cloudfridge-alb` recreated (`cloudfridge-alb-2027961514.eu-west-1.elb.amazonaws.com`) with the `/api/*` rule. The app loaded through it. |
+| Dashboard | `cloudfridge-dashboard` with backend ASG `CPUUtilization` and `HealthyHostCount` for both target groups. The 5XX widget wasn't added. |
+| Load test | `load-test/load.js`, 25 workers sending `POST /api/auth/login` (bcrypt cost 10), about 25 requests per second. One `502` during the first 15 seconds, otherwise no errors. Stopped once scale-out was proven. (`k6` wasn't installed, so the Node script replaced it.) |
+| Scale out | Average backend CPU rose from about 0% to **99.89%**. At 23:31:00 UTC the `AlarmHigh` alarm of the target tracking policy changed desired capacity from **2 to 4**; both new instances launched and were healthy by 23:33:10 UTC (`p6-scaling.png`, `p6-asg-activity.png`). |
+| Scale in | Not observed: the resources were shut down right after scale-out. |
+| Failure recovery | Covered by the Phase 3 terminate test (`p3-self-healing.png`), not repeated under load. |
+| User isolation, validation | Covered by the 19 backend API tests from Phase 1 (404 on another user's item, 400 on bad input). |
+| Cost | `p6-cost.png` taken from Cost Explorer; it shows \$0.00 because credits cover the spend. |
+| Shutdown | ASGs at 0, `cloudfridge-alb` deleted, `cloudfridge-db` deleted without a final snapshot. |

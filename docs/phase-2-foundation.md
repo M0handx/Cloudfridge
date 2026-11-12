@@ -1,6 +1,6 @@
 # Phase 2: Foundation Walkthrough
 
-> **Status:** Done ✅ (10 November 2026). RDS is stopped again after Phase 3's first session.
+> **Status:** Done ✅ (10 November 2026). RDS was deleted on 12 November 2026 after all Phase 6 tests and screenshots were completed.
 > **Region:** `eu-west-1` (Ireland). Check the region selector at the top right of the console before every step.
 > **Names and tags:** prefix `cloudfridge-`, tag `Project=cloudfridge` on everything that accepts tags.
 > **Screenshots:** 4, marked 📸. Everything else is described in the report's text, so don't stop to capture it.

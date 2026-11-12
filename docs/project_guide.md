@@ -916,6 +916,8 @@ A live demo is optional. If you do one, keep it to 2 minutes using the deployed 
 
 **Done when:** all tests pass or have a documented explanation, the evidence is saved in `docs/evidence/`, and the report and presentation are submitted.
 
+**Result (12 November 2026):** under load the backend CPU reached 99.89% and the target tracking policy scaled the backend from 2 to 4 servers. All 14 screenshots are in `docs/evidence/`, and AWS was shut down (RDS deleted). Scale-in wasn't observed. See [phase-6-delivery.md](phase-6-delivery.md#4-results). The report and presentation are still to write.
+
 ---
 
 ## 12. Cost control
